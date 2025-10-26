@@ -1,0 +1,8 @@
+{
+  "name": "mock-encryption-lines-root",
+  "private": true,
+  "scripts": {
+    "start": "cd frontend && npm start",
+    "install-frontend": "cd frontend && npm install"
+  }
+}
