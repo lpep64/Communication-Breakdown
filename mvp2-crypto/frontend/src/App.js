@@ -193,7 +193,7 @@ function App() {
 
   const handleHashUpdate = async (nodeId, newHash) => {
     try {
-      await axios.put(`${API_BASE_URL}/node/${nodeId}/hash`, newHash, {
+      await axios.put(`${API_BASE_URL}/node/${nodeId}/hash`, { hash_value: newHash }, {
         headers: { 'Content-Type': 'application/json' }
       });
       // Update local state
@@ -210,15 +210,28 @@ function App() {
 
   const handleAutoRelayToggle = async (nodeId, autoRelay) => {
     try {
-      await axios.put(`${API_BASE_URL}/node/${nodeId}/auto_relay`, autoRelay, {
-        headers: { 'Content-Type': 'application/json' }
-      });
+      await axios.put(`${API_BASE_URL}/node/${nodeId}/auto_relay`, { auto_relay: autoRelay });
       // Update local state
       setNodes(prev => prev.map(n => 
         n.node_id === nodeId ? { ...n, auto_relay: autoRelay } : n
       ));
       if (selectedNode?.node_id === nodeId) {
         setSelectedNode(prev => ({ ...prev, auto_relay: autoRelay }));
+      }
+    } catch (error) {
+      console.error('Error toggling auto-relay:', error);
+    }
+  };
+
+  const handleTamperMessage = async (packetId) => {
+    try {
+      const response = await axios.post(`${API_BASE_URL}/attack/tamper_packet/${packetId}`);
+      console.log('Message tampered:', response.data);
+      alert(`Message tampered! Original: "${response.data.original_text}" → Tampered: "${response.data.tampered_text}"\n\n${response.data.note}`);
+      // Refresh inventory to show tampered message
+      if (selectedNode) {
+        const inventoryRes = await axios.get(`${API_BASE_URL}/node/${selectedNode.node_id}/inventory`);
+        setNodePackets(inventoryRes.data.packets);
       }
     } catch (error) {
       console.error('Error updating auto-relay:', error);
@@ -438,6 +451,13 @@ function App() {
                     <div className="message-header">
                       <span>From: Node {packet.publisher_id}</span>
                       <span>Path: {packet.path_string}</span>
+                      <button 
+                        className="tamper-button"
+                        onClick={() => handleTamperMessage(packet.packet_id)}
+                        title="Tamper with this message to break hash integrity"
+                      >
+                        🔨 Tamper
+                      </button>
                     </div>
                     <div className={`message-content ${getPacketClass(packet)}`}>
                       {packet.content}

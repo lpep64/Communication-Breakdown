@@ -312,6 +312,22 @@ code {
   align-items: center;
   font-size: 0.8rem;
   color: #666;
+  gap: 0.5rem;
+}
+
+.tamper-button {
+  background: #ff6b6b;
+  color: white;
+  border: none;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  transition: background 0.2s;
+}
+
+.tamper-button:hover {
+  background: #ff5252;
 }
 
 .message-content {

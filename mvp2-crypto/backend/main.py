@@ -51,6 +51,7 @@ class NodeRuntime:
         self.location_name = node_data.location_name
         self.range = node_data.range
         self.hash_value = f"0x{uuid.uuid4().hex[:8]}"  # Initial hash value
+        self.original_hash = self.hash_value  # Store original for integrity checking
         self.auto_relay = True  # Auto-relay messages (can be disabled to simulate attacks)
         
         # Initialize crypto, wallet, and reputation
@@ -60,6 +61,12 @@ class NodeRuntime:
         self.reputation = ReputationManager(self.id)
         self.known_messages: Set[str] = set()
         self.peer_public_keys: Dict[int, bytes] = {}
+        
+        # Self-reputation tracking
+        self.self_reputation = 100.0  # Starts at 100%
+        self.relay_opportunities = 0
+        self.relay_successes = 0
+        self.hash_tampered = False
     
     def to_dict(self):
         """Convert to dictionary for API responses"""
@@ -398,12 +405,30 @@ async def simulation_tick():
             connected_via_link = (a, b) in CONNECTIONS
 
             if connected_via_range or connected_via_link:
+                # Track relay opportunity
+                node_a.relay_opportunities += 1
+                
+                # REPUTATION CHECK: Node B won't accept packets from node A if A's reputation is too low
+                REPUTATION_THRESHOLD = 30.0  # Nodes below 30% are untrusted
+                if node_a.self_reputation < REPUTATION_THRESHOLD:
+                    # Node B refuses to accept messages from low-reputation node A
+                    continue  # Skip this relay - node A is untrusted
+                
                 # Check if node_a is configured to auto-relay (simulate selfish node attack)
                 if not node_a.auto_relay:
+                    # Penalize reputation for refusing to relay
+                    node_a.self_reputation = max(10.0, node_a.self_reputation - 2.0)
                     continue  # Skip relaying if auto_relay is disabled
                 
                 # Node A shares its inventory with Node B
+                node_a.relay_successes += 1
                 for packet in node_inventories[node_a.id]:
+                    # REPUTATION CHECK: Reject packets from low-reputation publishers
+                    publisher_node = NODES[packet.publisher_id - 1]
+                    if publisher_node.self_reputation < REPUTATION_THRESHOLD:
+                        # Packet from untrusted publisher - reject
+                        continue
+                    
                     # Check anti-loop rule: reject if node_b is already in history
                     if node_b.id not in packet.history:
                         # Economic logic: Node A (relay) gets paid for forwarding
@@ -533,24 +558,36 @@ async def get_nodes():
         for node in NODES
     ]
 
+class HashUpdate(BaseModel):
+    hash_value: str
+
 @app.put("/node/{node_id}/hash")
-async def update_node_hash(node_id: int, hash_value: str):
+async def update_node_hash(node_id: int, update: HashUpdate):
     """Update the hash value for a specific node"""
     if node_id not in range(1, 11):
         raise HTTPException(status_code=404, detail="Node not found")
     
     node = NODES[node_id - 1]
-    node.hash_value = hash_value
-    return {"node_id": node_id, "hash": node.hash_value}
+    node.hash_value = update.hash_value
+    
+    # Mark hash as tampered and penalize reputation
+    if update.hash_value != node.original_hash:
+        node.hash_tampered = True
+        node.self_reputation = max(20.0, node.self_reputation - 30.0)  # Big penalty for tampering
+    
+    return {"node_id": node_id, "hash": node.hash_value, "reputation": node.self_reputation}
+
+class AutoRelayUpdate(BaseModel):
+    auto_relay: bool
 
 @app.put("/node/{node_id}/auto_relay")
-async def update_node_auto_relay(node_id: int, auto_relay: bool):
+async def update_node_auto_relay(node_id: int, update: AutoRelayUpdate):
     """Toggle auto-relay for a specific node (simulate selfish node attack)"""
     if node_id not in range(1, 11):
         raise HTTPException(status_code=404, detail="Node not found")
     
     node = NODES[node_id - 1]
-    node.auto_relay = auto_relay
+    node.auto_relay = update.auto_relay
     return {"node_id": node_id, "auto_relay": node.auto_relay}
 
 @app.post("/regenerate_nodes")
@@ -560,7 +597,21 @@ async def regenerate_nodes():
     NODES = create_fixed_nodes()
     # Clear all inventories when regenerating nodes
     node_inventories = {i: [] for i in range(1, 11)}
-    return {"message": "Nodes regenerated with random URI campus locations", "nodes": NODES}
+    return {
+        "message": "Nodes regenerated with random URI campus locations",
+        "nodes": [
+            {
+                "node_id": node.id,
+                "name": node.name,
+                "lat": node.latitude,
+                "lng": node.longitude,
+                "range": node.range,
+                "hash": node.hash_value,
+                "auto_relay": node.auto_relay
+            }
+            for node in NODES
+        ]
+    }
 
 @app.post("/publish_message")
 async def publish_message(request: PublishMessageRequest):
@@ -693,6 +744,14 @@ async def remove_connection(req: ConnectionRequest):
         CONNECTIONS.remove((a, b))
         return {"status": "removed", "a": a, "b": b}
     raise HTTPException(status_code=404, detail="Connection not found")
+
+@app.delete("/connections/clear")
+async def clear_all_connections():
+    """Clear all connections in the network"""
+    global CONNECTIONS
+    count = len(CONNECTIONS)
+    CONNECTIONS.clear()
+    return {"status": "cleared", "removed_count": count}
 
 @app.get("/node/{node_id}/messages")
 async def get_node_messages(node_id: int):
@@ -967,9 +1026,13 @@ async def get_economy_stats():
     wallets = [node.wallet for node in NODES]
     stats = global_economy.get_economy_stats(wallets)
     
-    # Add per-node balance breakdown
+    # Add per-node balance and reputation breakdown
     stats["node_balances"] = [
-        {"node_id": node.id, "balance": round(node.wallet.balance, 2)}
+        {
+            "node_id": node.id, 
+            "balance": round(node.wallet.balance, 2),
+            "reputation": round(node.self_reputation, 1)  # Use tracked self-reputation
+        }
         for node in sorted(NODES, key=lambda n: n.wallet.balance, reverse=True)
     ]
     
@@ -1367,6 +1430,10 @@ async def attack_tamper_packet(packet_id: str):
                 else:
                     packet.message_text = "TAMPERED"
                 
+                # Penalize the node's reputation for tampering
+                tampering_node = NODES[node_id - 1]
+                tampering_node.self_reputation = max(5.0, tampering_node.self_reputation - 40.0)
+                
                 return {
                     "attack_type": "packet_tampering",
                     "packet_id": packet_id,
@@ -1374,6 +1441,7 @@ async def attack_tamper_packet(packet_id: str):
                     "original_text": original_text,
                     "tampered_text": packet.message_text,
                     "message_type": packet.message_type,
+                    "new_reputation": tampering_node.self_reputation,
                     "note": "Signature verification will now FAIL. Packet will be rejected by recipients."
                 }
     
