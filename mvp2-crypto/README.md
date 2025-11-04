@@ -1,22 +1,26 @@
-# Communication-Breakdown
+# MVP B2: Economic & Resilient Simulation
 
-A web-based simulation of a secure broadcast network that demonstrates encrypted message distribution across virtual nodes on a US map. This project simulates the publishing and receiving of encrypted messages where only designated targets can "decrypt" and read the message content.
+A secure, decentralized broadcast network simulation on the University of Rhode Island Kingston campus. This implementation features real cryptography (ECDSA, ECDH, AES-GCM), micro-incentive economics, CRDSA collision simulation, and Bloom filter-based gossip protocols. Nodes are positioned on the URI campus map with realistic range measurements in meters.
 
 ## System Architecture
 
 ### Backend (Python/FastAPI)
-- **Node Management**: Manages 10 virtual nodes, each with fixed, hardcoded locations across the US map
-- **API Endpoints**: Provides RESTful endpoints for the core simulation loop
-- **Message Broadcasting**: Core endpoint `POST /publish_message` accepts:
-  - `publisher_node_id`: ID of the node sending the message
-  - `message_text`: The actual message content
-  - `list_of_target_node_ids`: Array of node IDs that should be able to decrypt the message
-- **Simulated Encryption**: Does *not* perform real encryption but broadcasts messages to all nodes with an `is_target` boolean flag to simulate encrypted communication
+- **Node Management**: 10 virtual nodes positioned on URI Kingston campus
+- **Real Cryptography**: ECDSA (SECP256R1), ECDH + AES-GCM, simulated ZKP
+- **Micro-Economy**: Credit-based system with send costs and relay rewards
+- **Network Protocols**: CRDSA collision simulation, Bloom filter gossip, TTL management
+- **Message Types**:
+  - **Logistics**: Encrypted (AES-GCM), costs 2 credits, WiFi network
+  - **Help**: Signed (ECDSA), costs 2 credits, WiFi network
+  - **Safe**: Anonymous (ZKP), free to send, LoRa network priority
+- **API Endpoints**: RESTful endpoints for messaging, economy stats, attack simulation
 
-### Frontend (React/Leaflet)
-- **Interactive Map**: Displays a US map using Leaflet with 10 nodes as clickable markers
-- **Node Inventory**: Clicking any node opens its dedicated "Inventory" interface
-- **Message Visualization**: Renders messages differently based on the node's relationship to the message (target, publisher, or observer)
+### Frontend (React)
+- **URI Campus Map**: Static map of URI Kingston campus (uri-map.png)
+- **Draggable Nodes**: Move nodes to update positions via backend API
+- **Range Circles**: Visualize communication radius (10-200 meters for campus scale)
+- **Economy Dashboard**: Real-time Gini coefficient, Nakamoto coefficient, node balances
+- **Message Interface**: Choose message type, select targets, view inventory
 
 ## Project Structure
 

@@ -1,5 +1,5 @@
 {
-  "name": "mock-encryption-lines-root",
+  "name": "mvp2-crypto-root",
   "private": true,
   "scripts": {
     "start": "cd frontend && npm start",

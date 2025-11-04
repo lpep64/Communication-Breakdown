@@ -30,6 +30,8 @@ env/
 venv/
 ENV/
 env.bak/
+crypto-env/
+**/crypto-env/
 
 # pip wheel
 pip-wheel-metadata/
@@ -91,13 +93,53 @@ local.settings.json
 # Keep these project-specific files ignored
 mock-encryption/backend/__pycache__/
 mock-encryption-lines/backend/__pycache__/
+mvp1-mock/backend/__pycache__/
+mvp2-crypto/backend/__pycache__/
 
 # Ignore node_modules in any frontend folders
 frontend/node_modules/
 mock-encryption/frontend/node_modules/
 mock-encryption-lines/frontend/node_modules/
+mvp1-mock/frontend/node_modules/
+mvp2-crypto/frontend/node_modules/
 
 # Ignore coverage and test output
 coverage/
+
+# Python package artifacts
+*.egg
+*.whl
+.eggs/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# Cryptographic keys (NEVER commit private keys!)
+*.pem
+*.key
+*.pub
+id_rsa*
+id_ecdsa*
+*.p12
+*.pfx
+
+# Sensitive configuration
+secrets.json
+credentials.json
+*.secret
+
+# Database files
+*.sqlite
+*.sqlite3
+*.db
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*~
 
 # End of file
