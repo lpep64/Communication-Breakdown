@@ -603,6 +603,10 @@ input:checked + .toggle-slider:before {
   border-left-color: #ef4444;
 }
 
+.roster-card.pending {
+  border-left-color: #f97316;
+}
+
 .roster-card.unknown {
   border-left-color: #9ca3af;
 }

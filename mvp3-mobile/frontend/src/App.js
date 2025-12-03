@@ -298,11 +298,11 @@ const RosterView = ({ employees, selectedEmployees, onToggleEmployee }) => {
   return (
     <div className="roster-grid">
       {employees.map((emp) => {
-        // Use response_type for color, fallback to status-based
+        // Use response_type for color - yellow/orange for pending requests
         const responseTypeClass = emp.response_type || 'grey';
         const statusClass = responseTypeClass === 'green' ? 'safe' :
                           responseTypeClass === 'red' ? 'help' :
-                          responseTypeClass === 'yellow' ? 'help' :
+                          responseTypeClass === 'yellow' ? 'pending' :
                           'unknown';
         const isSelected = selectedEmployees.includes(emp.id);
         
@@ -650,8 +650,8 @@ const ManagerDashboard = () => {
                             </td>
                             <td>
                               {response.response_time 
-                                ? getRelativeTime(response.response_time)
-                                : 'Pending'}
+                                ? formatExactTime(response.response_time)
+                                : <span style={{ color: '#f59e0b' }}>No response yet</span>}
                             </td>
                           </tr>
                         ))}
@@ -705,6 +705,33 @@ const ManagerDashboard = () => {
 function App() {
   const [currentView, setCurrentView] = useState('manager'); // 'manager' or 'employee'
   const [employeeId, setEmployeeId] = useState(1);
+  const [employees, setEmployees] = useState([]);
+
+  // Fetch employee data for dropdown
+  useEffect(() => {
+    const fetchEmployees = async () => {
+      try {
+        const response = await axios.get(`${API_BASE}/employees`);
+        setEmployees(response.data);
+      } catch (err) {
+        console.error('Failed to fetch employees:', err);
+      }
+    };
+    
+    fetchEmployees();
+    const interval = setInterval(fetchEmployees, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const getEmployeeStatusColor = (emp) => {
+    if (!emp) return '#6b7280'; // grey default
+    
+    const responseType = emp.response_type || 'grey';
+    if (responseType === 'green') return '#10b981'; // green
+    if (responseType === 'red') return '#ef4444'; // red
+    if (responseType === 'yellow') return '#f59e0b'; // yellow/orange
+    return '#9ca3af'; // grey
+  };
 
   return (
     <div className="app">
@@ -713,7 +740,7 @@ function App() {
           <h1>⚡ Rapid Response</h1>
           <div className="nav-links">
             <select
-              className="nav-link"
+              className="nav-link employee-dropdown"
               style={{ cursor: 'pointer' }}
               value={currentView === 'manager' ? 'manager' : employeeId}
               onChange={(e) => {
@@ -727,8 +754,14 @@ function App() {
               }}
             >
               <option value="manager">Manager Dashboard</option>
-              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(id => (
-                <option key={id} value={id}>Employee {id}</option>
+              {employees.map(emp => (
+                <option 
+                  key={emp.id} 
+                  value={emp.id}
+                  style={{ color: getEmployeeStatusColor(emp) }}
+                >
+                  Employee {emp.id}
+                </option>
               ))}
             </select>
           </div>
@@ -760,6 +793,22 @@ function getRelativeTime(timestamp) {
   if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
   if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
   return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+}
+
+function formatExactTime(timestamp) {
+  const date = new Date(timestamp);
+  let hours = date.getHours();
+  const minutes = date.getMinutes();
+  const seconds = date.getSeconds();
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  
+  hours = hours % 12;
+  hours = hours ? hours : 12; // 0 becomes 12
+  
+  const minutesStr = minutes < 10 ? '0' + minutes : minutes;
+  const secondsStr = seconds < 10 ? '0' + seconds : seconds;
+  
+  return `${hours}:${minutesStr}:${secondsStr} ${ampm}`;
 }
 
 export default App;
