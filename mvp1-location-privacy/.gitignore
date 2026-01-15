@@ -1,0 +1,79 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.env
+.env*
+.venv/
+venv/
+build/
+dist/
+*.egg-info/
+*.log
+*.sqlite3
+
+# Node/React
+node_modules/
+build/
+dist/
+.env*
+.npmrc
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# VS Code
+.vscode/
+
+# OS/Editor
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*.bak
+*.tmp
+
+# Coverage
+coverage/
+*.cover
+*.coverage
+
+# Misc
+*.orig
+*.rej
+*.lock
+
+# Frontend static
+frontend/public/static/
+frontend/public/assets/
+
+# Backend static
+backend/static/
+backend/media/
+
+# Ignore IDE settings
+.idea/
+*.iml
+
+# Ignore test output
+junit.xml
+
+# Ignore compiled notebooks
+*.ipynb_checkpoints
+
+# Ignore package manager files
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# Ignore generated files
+*.js.map
+*.tsbuildinfo
+
+# Ignore documentation build
+_docs/
+
+# Ignore secret files
+secrets.json
