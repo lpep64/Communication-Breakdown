@@ -1,0 +1,164 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test-mvp1:
+    name: MVP1 - Location Privacy
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mvp1-location-privacy
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    
+    - name: Install backend dependencies
+      working-directory: mvp1-location-privacy/backend
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Check backend syntax
+      working-directory: mvp1-location-privacy/backend
+      run: |
+        python -m py_compile main.py
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '16'
+    
+    - name: Install frontend dependencies
+      working-directory: mvp1-location-privacy/frontend
+      run: npm install
+    
+    - name: Build frontend
+      working-directory: mvp1-location-privacy/frontend
+      run: npm run build
+
+  test-mvp2:
+    name: MVP2 - Broadcast Simulation
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mvp2-broadcast-simulation
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    
+    - name: Install backend dependencies
+      working-directory: mvp2-broadcast-simulation/backend
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Check backend syntax
+      working-directory: mvp2-broadcast-simulation/backend
+      run: |
+        python -m py_compile main.py
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '16'
+    
+    - name: Install frontend dependencies
+      working-directory: mvp2-broadcast-simulation/frontend
+      run: npm install
+    
+    - name: Build frontend
+      working-directory: mvp2-broadcast-simulation/frontend
+      run: npm run build
+
+  test-mvp3:
+    name: MVP3 - Mesh Communication
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mvp3-mesh-communication
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    
+    - name: Install backend dependencies
+      working-directory: mvp3-mesh-communication/backend
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Check backend syntax
+      working-directory: mvp3-mesh-communication/backend
+      run: |
+        python -m py_compile main.py crypto_utils.py economy.py
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '16'
+    
+    - name: Install frontend dependencies
+      working-directory: mvp3-mesh-communication/frontend
+      run: npm install
+    
+    - name: Build frontend
+      working-directory: mvp3-mesh-communication/frontend
+      run: npm run build
+
+  test-mvp4:
+    name: MVP4 - Mobile Accountability
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mvp4-mobile-accountability
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    
+    - name: Install backend dependencies
+      working-directory: mvp4-mobile-accountability/backend
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Check backend syntax
+      working-directory: mvp4-mobile-accountability/backend
+      run: |
+        python -m py_compile main.py crypto_utils.py
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '16'
+    
+    - name: Install frontend dependencies
+      working-directory: mvp4-mobile-accountability/frontend
+      run: npm install
+    
+    - name: Build frontend
+      working-directory: mvp4-mobile-accountability/frontend
+      run: npm run build

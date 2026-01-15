@@ -1,115 +1,54 @@
-# Node
-node_modules/
-**/node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# React build
-build/
-frontend/build/
-
 # Python
-*.py[cod]
 __pycache__/
-*.so
-*.egg-info/
-dist/
-build/
+*.py[cod]
 *.pyc
 *.pyo
 *.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
 *.env
-.venv/
-venv/
-env/
-*/mock-env/
-**/mock-env/
+.env
 
-# Virtual environment folders
+# Virtual environments
 venv/
+.venv/
+env/
 ENV/
 env.bak/
+venv.bak/
+*/venv/
+*/env/
+**/venv/
+**/env/
+mock-env/
 crypto-env/
+guardian-env/
+**/mock-env/
 **/crypto-env/
+**/guardian-env/
 
-# pip wheel
+# pip
+pip-log.txt
+pip-delete-this-directory.txt
 pip-wheel-metadata/
 
-# PyInstaller
-#  Usually these files are written by a python script from a template
-*.manifest
-*.spec
-
-# Test / coverage
+# pytest / testing
+.pytest_cache/
 .coverage
+.coverage.*
 htmlcov/
 .tox/
 .nox/
-.pytest_cache/
-.coverage.*
+*.cover
+.hypothesis/
 
-# IDEs and editors
-.vscode/
-.idea/
-*.sublime-project
-*.sublime-workspace
+# Node.js / npm
+node_modules/
+**/node_modules/
 
-# OS files
-.DS_Store
-Thumbs.db
-
-# Logs
-logs/
-*.log
-npm-debug.log*
-
-# dotenv
-.env
-.env.*.local
-
-# Mac
-*.DS_Store
-
-# Windows
-Thumbs.db
-ehthumbs.db
-
-# Misc
-*.sqlite3
-*.db
-
-# Build outputs
-dist/
-build/
-
-# Local envs
-local.settings.json
-
-# Lock files (optional to ignore)
-# package-lock.json
-# yarn.lock
-
-# Keep these project-specific files ignored
-mock-encryption/backend/__pycache__/
-mock-encryption-lines/backend/__pycache__/
-mvp1-mock/backend/__pycache__/
-mvp2-crypto/backend/__pycache__/
-
-# Ignore node_modules in any frontend folders
-frontend/node_modules/
-mock-encryption/frontend/node_modules/
-mock-encryption-lines/frontend/node_modules/
-mvp1-mock/frontend/node_modules/
-mvp2-crypto/frontend/node_modules/
-
-# Ignore coverage and test output
-coverage/
-
-# Python package artifacts
-*.egg
-*.whl
-.eggs/
 
 # Jupyter Notebook
 .ipynb_checkpoints
